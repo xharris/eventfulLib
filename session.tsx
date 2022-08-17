@@ -1,7 +1,7 @@
 import { ReactNode, useCallback, useEffect, useState } from 'react'
 import { Eventful } from 'types'
 import { api } from './api'
-import { createStateContext, useMount } from 'react-use'
+import createStateContext from 'react-use/lib/factory/createStateContext'
 
 const [useSessionCtx, Provider] = createStateContext<Eventful.User | null>(null)
 
