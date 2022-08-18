@@ -4,7 +4,7 @@ import { io, Socket } from 'socket.io-client'
 import { ClientToServerEvents, ServerToClientEvents } from 'types'
 import config from '../libs/config'
 
-const { NODE_ENV, REACT_APP_API_URL, IS_MOBILE } = config
+const { NODE_ENV, REACT_APP_API_URL, IS_MOBILE, REACT_APP_SOCKET_URL } = config
 
 export const api = axios.create({
   baseURL:
@@ -31,7 +31,9 @@ export const useSocket = () => {
   const [connected, setConnected] = useState(false)
 
   useEffect(() => {
-    const newSocket = io(process.env.REACT_APP_SOCKET_URL ?? '/')
+    const newSocket = io(REACT_APP_SOCKET_URL ?? '/', {
+      transports: IS_MOBILE ? ['websocket'] : undefined,
+    })
     setSocket(newSocket)
 
     return () => {
@@ -46,6 +48,7 @@ export const useSocket = () => {
     socket?.on('disconnect', () => {
       setConnected(false)
     })
+    socket?.on('connect_error', (e) => console.log(`[Socket.IO] ${e.message}`))
 
     return () => {
       socket?.off('connect')
