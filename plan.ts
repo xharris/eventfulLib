@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Eventful } from 'types'
 import { api } from './api'
 
@@ -75,6 +75,15 @@ export const CATEGORY_INFO: Record<number, CategoryInfo> = {
   // }
 }
 
+export const getTitle = (plan: Eventful.Plan) =>
+  plan.category === CATEGORY.Carpool
+    ? `${plan.what} carpool`
+    : plan.category === CATEGORY.Lodging || plan.category === CATEGORY.Meet
+    ? plan.location?.label ?? plan.location?.address
+    : !!plan.what?.length
+    ? plan.what
+    : 'Untitled plan'
+
 export const usePlans = ({ event }: { event?: Eventful.ID }) => {
   const qc = useQueryClient()
 
@@ -90,20 +99,54 @@ export const usePlans = ({ event }: { event?: Eventful.ID }) => {
   const muUpdatePlan = useMutation(
     (body: Eventful.API.PlanEdit) => api.put<Eventful.Plan>(`plan/${body._id}`, body),
     {
-      onSuccess: () => {
+      onSuccess: (res) => {
         qc.invalidateQueries(['event', { id: event }])
+        qc.invalidateQueries(['plan', { id: res.data._id }])
       },
     }
   )
 
   const muDeletePlan = useMutation((id: Eventful.ID) => api.delete(`plan/${id}`), {
-    onSuccess: () => {
+    onSuccess: (res) => {
       qc.invalidateQueries(['event', { id: event }])
     },
   })
 
   return {
     addPlan: muAddPlan.mutateAsync,
+    updatePlan: muUpdatePlan.mutateAsync,
+    deletePlan: muDeletePlan.mutateAsync,
+  }
+}
+
+export const usePlan = ({ plan }: { plan?: Eventful.ID }) => {
+  const query = useQuery<Eventful.API.PlanGet>(
+    ['plan', { id: plan }],
+    () => api.get(`plan/${plan}`).then((res) => res.data),
+    {
+      enabled: !!plan,
+    }
+  )
+  const qc = useQueryClient()
+
+  const muUpdatePlan = useMutation(
+    (body: Eventful.API.PlanEdit) => api.put<Eventful.Plan>(`plan/${body._id}`, body),
+    {
+      onSuccess: (res) => {
+        qc.invalidateQueries(['event', { id: res.data.event }])
+        qc.invalidateQueries(['plan', { id: res.data._id }])
+      },
+    }
+  )
+
+  const muDeletePlan = useMutation((id: Eventful.ID) => api.delete(`plan/${id}`), {
+    onSuccess: (res) => {
+      qc.invalidateQueries(['event', { id: res.data._id }])
+    },
+  })
+
+  return {
+    ...query,
     updatePlan: muUpdatePlan.mutateAsync,
     deletePlan: muDeletePlan.mutateAsync,
   }
