@@ -8,7 +8,7 @@ const { NODE_ENV, REACT_APP_API_URL, IS_MOBILE, REACT_APP_SOCKET_URL } = config
 
 export const api = axios.create({
   baseURL:
-    NODE_ENV === 'production' && !IS_MOBILE
+    NODE_ENV === 'production' && !IS_MOBILE && window
       ? `${window.location.protocol}//${window.location.host}${REACT_APP_API_URL}`
       : REACT_APP_API_URL,
   withCredentials: true,
