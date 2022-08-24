@@ -16,9 +16,13 @@ export const useSession = (verify: boolean = false) => {
         ? api
             .get('auth')
             .then((res) => {
+              console.log('session:res', res)
               setSession(res.data)
             })
-            .catch(() => setSession(null))
+            .catch((err) => {
+              console.log('session:err', err)
+              setSession(null)
+            })
         : Promise.resolve(),
     [verify]
   )
