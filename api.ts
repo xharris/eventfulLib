@@ -4,11 +4,11 @@ import { io, Socket } from 'socket.io-client'
 import { ClientToServerEvents, ServerToClientEvents } from 'types'
 import config from '../libs/config'
 
-const { NODE_ENV, REACT_APP_API_URL, IS_MOBILE, REACT_APP_SOCKET_URL } = config
+const { NODE_ENV, REACT_APP_API_URL = '/api', IS_MOBILE, REACT_APP_SOCKET_URL } = config
 
 export const api = axios.create({
   baseURL:
-    NODE_ENV === 'production' && !IS_MOBILE && window
+    NODE_ENV === 'production' && !IS_MOBILE
       ? `${window.location.protocol}//${window.location.host}${REACT_APP_API_URL}`
       : REACT_APP_API_URL,
   withCredentials: true,
