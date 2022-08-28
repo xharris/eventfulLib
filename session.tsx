@@ -16,11 +16,9 @@ export const useSession = (verify: boolean = false) => {
         ? api
             .get('auth')
             .then((res) => {
-              console.log('session:res', res)
               setSession(res.data)
             })
             .catch((err) => {
-              console.log('session:err', err)
               setSession(null)
             })
         : Promise.resolve(),
@@ -38,9 +36,17 @@ export const useSession = (verify: boolean = false) => {
   }, [verify])
 
   const logIn = (body: Eventful.API.LogInOptions) =>
-    api.post('login', body).then((res) => setSession(res.data))
+    api.post('login', body).then((res) => {
+      res.status < 300 && setSession(res.data)
+      return res
+    })
+  // .catch(console.log)
   const signUp = (body: Eventful.API.SignUpOptions) =>
-    api.post('signup', body).then((res) => setSession(res.data))
+    api.post('signup', body).then((res) => {
+      res.status < 300 && setSession(res.data)
+      return res
+    })
+  // .catch(console.log)
   const logOut = () => api.get('logout').then(() => setSession(null))
 
   return {

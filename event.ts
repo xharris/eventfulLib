@@ -82,6 +82,7 @@ export const useEvent = ({ id }: { id?: Eventful.ID | string }) => {
     (body: Eventful.API.EventUpdate) => api.put(`event/${id}`, body),
     {
       onSuccess: () => {
+        qc.invalidateQueries(['events'])
         qc.invalidateQueries(['event', { id }])
       },
     }
