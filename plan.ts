@@ -133,6 +133,7 @@ export const usePlan = ({ plan }: { plan?: Eventful.ID }) => {
     (body: Eventful.API.PlanEdit) => api.put<Eventful.Plan>(`plan/${body._id}`, body),
     {
       onSuccess: (res) => {
+        qc.invalidateQueries(['events'])
         qc.invalidateQueries(['event', { id: res.data.event }])
         qc.invalidateQueries(['plan', { id: res.data._id }])
       },
@@ -141,7 +142,8 @@ export const usePlan = ({ plan }: { plan?: Eventful.ID }) => {
 
   const muDeletePlan = useMutation((id: Eventful.ID) => api.delete(`plan/${id}`), {
     onSuccess: (res) => {
-      qc.invalidateQueries(['event', { id: res.data._id }])
+      qc.invalidateQueries(['events'])
+      qc.invalidateQueries(['event', { id: res.data.event }])
     },
   })
 

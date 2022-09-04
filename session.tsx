@@ -9,21 +9,22 @@ export const SessionProvider = Provider
 
 export const useSession = (verify: boolean = false) => {
   const [session, setSession] = useSessionCtx()
+  const [isFetching, setIsFetching] = useState(false)
 
-  const checkAuth = useCallback(
-    () =>
-      verify
-        ? api
-            .get('auth')
-            .then((res) => {
-              setSession(res.data)
-            })
-            .catch((err) => {
-              setSession(null)
-            })
-        : Promise.resolve(),
-    [verify]
-  )
+  const checkAuth = useCallback(() => {
+    setIsFetching(true)
+    return verify
+      ? api
+          .get('auth')
+          .then((res) => {
+            setSession(res.data)
+          })
+          .catch((err) => {
+            setSession(null)
+          })
+          .finally(() => setIsFetching(false))
+      : Promise.resolve()
+  }, [verify])
 
   useEffect(() => {
     let ignore = false
@@ -35,22 +36,37 @@ export const useSession = (verify: boolean = false) => {
     }
   }, [verify])
 
-  const logIn = (body: Eventful.API.LogInOptions) =>
-    api.post('login', body).then((res) => {
-      res.status < 300 && setSession(res.data)
-      return res
-    })
+  const logIn = (body: Eventful.API.LogInOptions) => {
+    setIsFetching(true)
+    return api
+      .post('login', body)
+      .then((res) => {
+        res.status < 300 && setSession(res.data)
+        return res
+      })
+      .finally(() => {
+        setIsFetching(false)
+      })
+  }
   // .catch(console.log)
-  const signUp = (body: Eventful.API.SignUpOptions) =>
-    api.post('signup', body).then((res) => {
-      res.status < 300 && setSession(res.data)
-      return res
-    })
+  const signUp = (body: Eventful.API.SignUpOptions) => {
+    setIsFetching(true)
+    return api
+      .post('signup', body)
+      .then((res) => {
+        res.status < 300 && setSession(res.data)
+        return res
+      })
+      .finally(() => {
+        setIsFetching(false)
+      })
+  }
   // .catch(console.log)
   const logOut = () => api.get('logout').then(() => setSession(null))
 
   return {
     session,
+    isFetching,
     logIn,
     signUp,
     logOut,

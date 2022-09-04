@@ -88,8 +88,16 @@ export const useEvent = ({ id }: { id?: Eventful.ID | string }) => {
     }
   )
 
+  const muDeleteEvent = useMutation(() => api.delete(`event/${id}`), {
+    onSuccess: () => {
+      qc.invalidateQueries(['events'])
+      qc.invalidateQueries(['event', { id }])
+    },
+  })
+
   return {
     ...query,
     updateEvent: muUpdateEvent.mutateAsync,
+    deleteEvent: muDeleteEvent.mutateAsync,
   }
 }
