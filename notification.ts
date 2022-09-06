@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Eventful } from 'types'
+import { requestPermission, showLocalNotification, useMessaging } from '../libs/notification'
 import { api, useSocket } from './api'
 import { useSession } from './session'
 // import { initializeApp } from 'firebase/app'
@@ -24,40 +25,14 @@ import { useSession } from './session'
 // })
 // const messaging = getMessaging(app)
 
-const requestPermission = () =>
+const request = () =>
   new Promise<void>((res, rej) => {
-    Notification.requestPermission().then((permission) => {
-      if (permission !== 'granted') {
-        return rej()
+    requestPermission().then((allowed) => {
+      console.log('notifications allowed?', allowed)
+      if (allowed) {
+        return res()
       }
-      return res()
-      // try {
-      //   navigator.serviceWorker
-      //     .register(`firebase-messaging-sw.js?${fbaseConfig}`, {
-      //       scope: '/',
-      //       updateViaCache: 'none',
-      //     })
-      //     .then((registration) =>
-      //       getToken(messaging, {
-      //         vapidKey:
-      //           'BOsvUqDTpR9npcwBxTCO2UGGQbOgt2sG2O9oUKubQhQw8mGqC8Leh-ihNSjhvqG_9q-jYfthin5Vw8PdCYOEBBk'
-      //       })
-      //     )
-      //     .then((token) => {
-      //       console.log('token', token)
-      //       if (!token) {
-      //         return rej()
-      //       }
-      //       api.post('fcm', { token }).then(() => {
-      //         res()
-      //       })
-      //     })
-      // } catch (e) {
-      //   if (e instanceof Error) {
-      //     console.log(e.message)
-      //   }
-      //   return rej()
-      // }
+      return rej()
     })
   })
 
@@ -101,7 +76,7 @@ export const useNotification = ({
 
   useEffect(() => {
     if (ns) {
-      requestPermission()
+      request()
     }
   }, [ns])
 
@@ -124,23 +99,11 @@ export const useNotification = ({
     'notification',
     (payload: Eventful.NotificationPayload) => {
       if (payload.notification && payload.data?.createdBy !== session?._id) {
-        new Notification(payload.notification.title ?? '', {
-          body: payload.notification.body,
-        })
+        showLocalNotification(payload)
       }
     },
     [session]
   )
-
-  // uncomment when I figure out FCM Push Notifs
-  // useEffect(() => {
-  //   const unsub = onMessage(messaging, (payload) => {
-  //     console.log('foreground message', payload)
-  //   })
-  //   return () => {
-  //     unsub()
-  //   }
-  // }, [])
 
   return {
     ...query,
@@ -153,6 +116,7 @@ export const useNotifications = () => {
   )
   const { data } = query
   const qc = useQueryClient()
+  useMessaging()
 
   const isEnabled = useCallback(
     ({
