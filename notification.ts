@@ -1,8 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { cancelAllScheduledNotificationsAsync } from 'expo-notifications'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Eventful } from 'types'
 import {
+  cancelAllScheduledNotifications,
   requestPermission,
   scheduleNotification,
   showLocalNotification,
@@ -163,6 +163,6 @@ export const useNotifications = () => {
 }
 
 export const scheduleNotifications = async (notifications: Eventful.LocalNotification[]) => {
-  await cancelAllScheduledNotificationsAsync()
+  await cancelAllScheduledNotifications()
   await Promise.all(notifications.map((notif) => scheduleNotification(notif)))
 }

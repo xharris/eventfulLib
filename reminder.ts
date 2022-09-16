@@ -62,43 +62,39 @@ export const _scheduleNotifications = (
 ) => {
   if (events) {
     const now = moment()
+    const added: string[] = []
     return scheduleNotifications(
       events
         .filter((event) => event.time.start && moment(event.time.start.date).isSameOrAfter(now))
         .reduce(
           (notifs, event) =>
             notifs.concat(
-              reminders
-                ?.reduce((rems, reminder) => {
-                  // add the notification if it's not already added
-                  const newRem: Eventful.LocalNotification = {
-                    expo: {
-                      identifier: event._id,
-                      content: {
-                        title: event.name,
-                        body: `${formatStart(event.time)} (${moment
-                          .duration(reminder.amount, reminder.unit)
-                          .humanize(true)})`,
-                      },
-                      trigger: {
-                        seconds: moment(event.time.start?.date)
-                          .subtract(reminder.amount, reminder.unit)
-                          .diff(new Date(), 's'),
-                      },
+              reminders?.reduce((rems, reminder) => {
+                // add the notification if it's not already added
+                const seconds = moment(event.time.start?.date)
+                  .subtract(reminder.amount, reminder.unit)
+                  .diff(new Date(), 's')
+                const newRem: Eventful.LocalNotification = {
+                  expo: {
+                    identifier: event._id.toString(),
+                    content: {
+                      title: event.name,
+                      body: `${formatStart(event.time)} (${moment
+                        .duration(reminder.amount, reminder.unit)
+                        .humanize(true)})`,
                     },
-                  }
-                  if (
-                    !rems.some(
-                      (rem) =>
-                        rem.expo.identifier === newRem.expo.identifier &&
-                        rem.expo.trigger.seconds === newRem.expo.trigger.seconds
-                    )
-                  ) {
-                    rems.push(newRem)
-                  }
-                  return rems
-                }, [] as Eventful.LocalNotification[])
-                .filter((notif) => notif.expo.trigger.seconds > 0) ?? []
+                    trigger: {
+                      seconds,
+                    },
+                  },
+                }
+                const addedId = `${newRem.expo.identifier}:${seconds}`
+                if (!added.includes(addedId) && seconds > 0) {
+                  rems.push(newRem)
+                  added.push(addedId)
+                }
+                return rems
+              }, [] as Eventful.LocalNotification[]) ?? []
             ),
           [] as Eventful.LocalNotification[]
         )
