@@ -1,7 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Eventful } from 'types'
-import { requestPermission, showLocalNotification, useMessaging } from '../libs/notification'
+import {
+  getScheduledNotifications,
+  requestPermission,
+  showLocalNotification,
+  useMessaging,
+} from '../libs/notification'
 import { api, useSocket } from './api'
 import { useSession } from './session'
 // import { initializeApp } from 'firebase/app'
@@ -154,4 +159,8 @@ export const useNotifications = () => {
     enable: muEnable.mutateAsync,
     disable: muDisable.mutateAsync,
   }
+}
+
+export const scheduleNotifications = async (notifications: Eventful.LocalNotification[]) => {
+  const scheduled: Eventful.LocalNotification[] = await getScheduledNotifications()
 }
