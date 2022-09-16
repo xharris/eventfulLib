@@ -1,9 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import moment from 'moment'
-import { useEffect } from 'react'
 import { Eventful } from 'types'
 import { api, useSocket } from './api'
-import { scheduleNotifications } from './notification'
 
 export const useEvents = () => {
   const query = useQuery<Eventful.API.EventGet[]>(['events'], () =>
@@ -20,30 +17,6 @@ export const useEvents = () => {
       },
     }
   )
-
-  useEffect(() => {
-    if (query.data) {
-      const now = moment()
-      scheduleNotifications(
-        query.data
-          .filter((event) => event.time.start && moment(event.time.start.date).isSameOrAfter(now))
-          .map(
-            (event) =>
-              ({
-                expo: {
-                  identifier: event._id,
-                  content: {
-                    title: event.name,
-                  },
-                  trigger: {
-                    minute: moment(event.time.start?.date).subtract(1, 'h').diff(new Date(), 'm'),
-                  },
-                },
-              } as Eventful.LocalNotification)
-          )
-      )
-    }
-  }, [query])
 
   return {
     ...query,
