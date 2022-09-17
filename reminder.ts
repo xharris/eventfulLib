@@ -2,11 +2,12 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Eventful } from 'types'
 import { api } from './api'
 import { useEvents } from './event'
-import { scheduleNotifications } from './notification'
+import { request, scheduleNotifications } from './notification'
 import { useSession } from './session'
 import moment from 'moment-timezone'
 import { formatStart } from '../components/Time'
 import { useEffect } from 'react'
+import * as Linking from 'expo-linking'
 
 export const UNIT_LABEL = {
   m: 'minute',
@@ -24,6 +25,12 @@ export const useReminders = () => {
     { enabled: !!session }
   )
   const qc = useQueryClient()
+
+  useEffect(() => {
+    if (!!query.data?.length) {
+      request()
+    }
+  }, [query])
 
   const addReminder = useMutation(() => api.post(`user/${session?._id}/reminders`), {
     onSuccess: () => {
@@ -56,14 +63,14 @@ export const useReminders = () => {
   }
 }
 
-export const _scheduleNotifications = (
+export const _scheduleNotifications = async (
   events: Eventful.API.EventGet[],
   reminders: Eventful.Reminder[]
 ) => {
   if (events) {
     const now = moment()
     const added: string[] = []
-    return scheduleNotifications(
+    return await scheduleNotifications(
       events
         .filter((event) => event.time.start && moment(event.time.start.date).isSameOrAfter(now))
         .reduce(
@@ -74,21 +81,26 @@ export const _scheduleNotifications = (
                 const seconds = moment(event.time.start?.date)
                   .subtract(reminder.amount, reminder.unit)
                   .diff(new Date(), 's')
+                const addedId = `${event._id.toString()}:${seconds}`
                 const newRem: Eventful.LocalNotification = {
                   expo: {
-                    identifier: event._id.toString(),
+                    identifier: addedId,
                     content: {
                       title: event.name,
                       body: `${formatStart(event.time)} (${moment
                         .duration(reminder.amount, reminder.unit)
                         .humanize(true)})`,
+                      data: {
+                        url: Linking.createURL('eventful', {
+                          queryParams: { eventId: event._id },
+                        }),
+                      },
                     },
                     trigger: {
                       seconds,
                     },
                   },
                 }
-                const addedId = `${newRem.expo.identifier}:${seconds}`
                 if (!added.includes(addedId) && seconds > 0) {
                   rems.push(newRem)
                   added.push(addedId)
@@ -103,12 +115,12 @@ export const _scheduleNotifications = (
 }
 
 export const useReminderScheduler = () => {
-  const { data: reminders } = useReminders()
-  const { data: events } = useEvents()
+  const { data: reminders, isFetching: isFetchingReminders } = useReminders()
+  const { data: events, isFetching: isFetchingEvents } = useEvents()
 
   useEffect(() => {
     if (reminders && events) {
       _scheduleNotifications(events, reminders)
     }
-  }, [reminders, events])
+  }, [reminders, events, isFetchingEvents, isFetchingReminders])
 }

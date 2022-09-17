@@ -10,6 +10,7 @@ import {
 } from '../libs/notification'
 import { api, useSocket } from './api'
 import { useSession } from './session'
+
 // import { initializeApp } from 'firebase/app'
 // import { getMessaging, getToken, onMessage } from 'firebase/messaging'
 
@@ -31,10 +32,9 @@ import { useSession } from './session'
 // })
 // const messaging = getMessaging(app)
 
-const request = () =>
+export const request = () =>
   new Promise<void>((res, rej) => {
     requestPermission().then((allowed) => {
-      console.log('notifications allowed?', allowed)
       if (allowed) {
         return res()
       }
