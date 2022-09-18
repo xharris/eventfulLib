@@ -7,7 +7,7 @@ import { useSession } from './session'
 import moment from 'moment-timezone'
 import { formatStart } from '../components/Time'
 import { useEffect } from 'react'
-import * as Linking from 'expo-linking'
+import { createUrl } from 'src/libs/linking'
 
 export const UNIT_LABEL = {
   m: 'minute',
@@ -91,9 +91,7 @@ export const _scheduleNotifications = async (
                         .duration(reminder.amount, reminder.unit)
                         .humanize(true)})`,
                       data: {
-                        url: Linking.createURL('eventful', {
-                          queryParams: { eventId: event._id },
-                        }),
+                        url: createUrl({ eventId: event._id.toString() }),
                       },
                     },
                     trigger: {
