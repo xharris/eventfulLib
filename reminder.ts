@@ -7,7 +7,7 @@ import { useSession } from './session'
 import moment from 'moment-timezone'
 import { formatStart } from '../components/Time'
 import { useEffect } from 'react'
-import { createUrl } from 'src/libs/linking'
+import { createUrl } from '../libs/linking'
 
 export const UNIT_LABEL = {
   m: 'minute',
@@ -32,14 +32,17 @@ export const useReminders = () => {
     }
   }, [query])
 
-  const addReminder = useMutation(() => api.post(`user/${session?._id}/reminders`), {
-    onSuccess: () => {
-      qc.invalidateQueries(['reminders'])
-    },
-  })
+  const addReminder = useMutation(
+    () => request().finally(() => api.post(`user/${session?._id}/reminders`)),
+    {
+      onSuccess: () => {
+        qc.invalidateQueries(['reminders'])
+      },
+    }
+  )
   const setReminder = useMutation(
     (reminder: Eventful.API.ReminderEdit) =>
-      api.put(`user/${session?._id}/reminders/${reminder._id}`, reminder),
+      request().finally(() => api.put(`user/${session?._id}/reminders/${reminder._id}`, reminder)),
     {
       onSuccess: () => {
         qc.invalidateQueries(['reminders'])

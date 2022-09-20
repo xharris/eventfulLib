@@ -75,7 +75,7 @@ export const CATEGORY_INFO: Record<number, CategoryInfo> = {
   // }
 }
 
-export const getTitle = (plan: Eventful.Plan) =>
+export const getTitle = (plan: Eventful.Plan | Eventful.API.PlanGet) =>
   plan.category === CATEGORY.Carpool
     ? `${plan.what} carpool`
     : plan.category === CATEGORY.Lodging || plan.category === CATEGORY.Meet
