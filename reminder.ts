@@ -8,6 +8,7 @@ import moment from 'moment-timezone'
 import { formatStart } from '../components/Time'
 import { useEffect } from 'react'
 import { createUrl } from '../libs/linking'
+import { getTitle } from './plan'
 
 export const UNIT_LABEL = {
   m: 'minute',
@@ -80,32 +81,39 @@ export const _scheduleNotifications = async (
           (notifs, event) =>
             notifs.concat(
               reminders?.reduce((rems, reminder) => {
-                // add the notification if it's not already added
-                const seconds = moment(event.time.start?.date)
-                  .subtract(reminder.amount, reminder.unit)
-                  .diff(new Date(), 's')
-                const addedId = `${event._id.toString()}:${seconds}`
-                const newRem: Eventful.LocalNotification = {
-                  expo: {
-                    identifier: addedId,
-                    content: {
-                      title: event.name,
-                      body: `${formatStart(event.time)} (${moment
-                        .duration(reminder.amount, reminder.unit)
-                        .humanize(true)})`,
-                      data: {
-                        url: createUrl({ eventId: event._id.toString() }),
+                event.plans.forEach((plan) => {
+                  if (!plan.time?.start) {
+                    return
+                  }
+                  // add the notification if it's not already added
+                  const seconds = moment(plan.time.start.date)
+                    .subtract(reminder.amount, reminder.unit)
+                    .diff(new Date(), 's')
+                  const addedId = `${event._id.toString()}:${seconds}`
+                  const newRem: Eventful.LocalNotification = {
+                    expo: {
+                      identifier: addedId,
+                      content: {
+                        title: getTitle(plan),
+                        body: `${formatStart(plan.time)} (${moment
+                          .duration(reminder.amount, reminder.unit)
+                          .humanize(true)})`,
+                        subtitle: event.name.trim(),
+                        data: {
+                          url: createUrl({ eventId: event._id.toString() }),
+                        },
+                      },
+                      trigger: {
+                        seconds,
                       },
                     },
-                    trigger: {
-                      seconds,
-                    },
-                  },
-                }
-                if (!added.includes(addedId) && seconds > 0) {
-                  rems.push(newRem)
-                  added.push(addedId)
-                }
+                  }
+                  if (!added.includes(addedId) && seconds > 0) {
+                    rems.push(newRem)
+                    added.push(addedId)
+                  }
+                  return rems
+                })
                 return rems
               }, [] as Eventful.LocalNotification[]) ?? []
             ),

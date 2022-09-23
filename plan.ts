@@ -76,13 +76,14 @@ export const CATEGORY_INFO: Record<number, CategoryInfo> = {
 }
 
 export const getTitle = (plan: Eventful.Plan | Eventful.API.PlanGet) =>
-  plan.category === CATEGORY.Carpool
+  (plan.category === CATEGORY.Carpool
     ? `${plan.what} carpool`
     : plan.category === CATEGORY.Lodging || plan.category === CATEGORY.Meet
     ? plan.location?.label ?? plan.location?.address
     : !!plan.what?.length
     ? plan.what
     : 'Untitled plan'
+  )?.trim()
 
 export const usePlans = ({ event }: { event?: Eventful.ID }) => {
   const qc = useQueryClient()
