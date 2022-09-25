@@ -90,6 +90,12 @@ export const _scheduleNotifications = async (
                     .subtract(reminder.amount, reminder.unit)
                     .diff(new Date(), 's')
                   const addedId = `${event._id.toString()}:${seconds}`
+                  const general: Eventful.NotificationPayload['general'] = {
+                    id: addedId,
+                    title: getTitle(plan),
+                    subtitle: event.name.trim(),
+                    url: createUrl({ eventId: event._id.toString() }),
+                  }
                   const newRem: Eventful.LocalNotification = {
                     expo: {
                       identifier: addedId,
@@ -107,6 +113,7 @@ export const _scheduleNotifications = async (
                         seconds,
                       },
                     },
+                    general,
                   }
                   if (!added.includes(addedId) && seconds > 0) {
                     rems.push(newRem)

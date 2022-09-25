@@ -9,7 +9,10 @@ import {
   useMessaging,
 } from '../libs/notification'
 import { api, useSocket } from './api'
+import { logger } from './log'
 import { useSession } from './session'
+
+const log = logger.extend('elib/notification')
 
 // import { initializeApp } from 'firebase/app'
 // import { getMessaging, getToken, onMessage } from 'firebase/messaging'
@@ -34,12 +37,15 @@ import { useSession } from './session'
 
 export const request = () =>
   new Promise<void>((res, rej) => {
-    requestPermission().then((allowed) => {
-      if (allowed) {
-        return res()
-      }
-      return rej()
-    })
+    requestPermission()
+      .then((allowed) => {
+        if (allowed) {
+          log.info('Notifications allowed')
+          return res()
+        }
+        return rej('Notifications not allowed')
+      })
+      .catch(log.error)
   })
 
 const useFocused = () => {

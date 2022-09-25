@@ -11,6 +11,9 @@ import {
 import { io, Socket } from 'socket.io-client'
 import { ClientToServerEvents, ServerToClientEvents } from 'types'
 import config from '../libs/config'
+import { logger } from './log'
+
+const log = logger.extend('elib/api')
 
 const { NODE_ENV, REACT_APP_API_URL = '/api', IS_MOBILE, REACT_APP_SOCKET_URL } = config
 
@@ -56,7 +59,7 @@ export const useSocket = () => {
     socket?.on('disconnect', () => {
       setConnected(false)
     })
-    socket?.on('connect_error', (e) => console.log(`[Socket.IO] ${e.message}`))
+    socket?.on('connect_error', (e) => log.error(`[Socket.IO] ${e.message}`))
 
     return () => {
       socket?.off('connect')
