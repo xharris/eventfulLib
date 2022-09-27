@@ -49,6 +49,7 @@ export const useSocket = () => {
 
     return () => {
       newSocket.close()
+      setSocket(undefined)
     }
   }, [])
 

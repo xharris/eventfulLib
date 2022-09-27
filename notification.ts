@@ -40,7 +40,6 @@ export const request = () =>
     requestPermission()
       .then((allowed) => {
         if (allowed) {
-          log.info('Notifications allowed')
           return res()
         }
         return rej('Notifications not allowed')

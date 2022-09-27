@@ -11,13 +11,17 @@ export const CATEGORY = {
 
 export interface CategoryInfo {
   label: string
+  color: string
   placeholder: Partial<Record<keyof Eventful.API.PlanAdd, string>>
   fields: Partial<Record<keyof Eventful.API.PlanAdd, boolean>>
 }
 
+const DEFAULT_COLOR = '#9E9E9E'
+
 export const CATEGORY_INFO: Record<number, CategoryInfo> = {
   0: {
     label: 'Empty',
+    color: DEFAULT_COLOR,
     placeholder: {
       what: 'Name',
       location: 'Location',
@@ -33,6 +37,7 @@ export const CATEGORY_INFO: Record<number, CategoryInfo> = {
   },
   1: {
     label: 'Lodging',
+    color: DEFAULT_COLOR,
     placeholder: {
       location: 'Where to stay?',
     },
@@ -44,6 +49,7 @@ export const CATEGORY_INFO: Record<number, CategoryInfo> = {
   },
   2: {
     label: 'Carpool',
+    color: DEFAULT_COLOR,
     placeholder: {
       what: 'Who is driving?',
     },
@@ -54,6 +60,7 @@ export const CATEGORY_INFO: Record<number, CategoryInfo> = {
   },
   3: {
     label: 'Location',
+    color: '#F44336',
     placeholder: {
       what: 'Where are you going?',
     },
