@@ -9,10 +9,10 @@ import {
   useMessaging,
 } from '../libs/notification'
 import { api, useSocket } from './api'
-import { logger } from './log'
+import { extend } from './log'
 import { useSession } from './session'
 
-const log = logger.extend('elib/notification')
+const log = extend('elib/notification')
 
 // import { initializeApp } from 'firebase/app'
 // import { getMessaging, getToken, onMessage } from 'firebase/messaging'

@@ -11,9 +11,9 @@ import {
 import { io, Socket } from 'socket.io-client'
 import { ClientToServerEvents, ServerToClientEvents } from 'types'
 import config from '../libs/config'
-import { logger } from './log'
+import { extend } from './log'
 
-const log = logger.extend('elib/api')
+const log = extend('elib/api')
 
 const { NODE_ENV, REACT_APP_API_URL = '/api', IS_MOBILE, REACT_APP_SOCKET_URL } = config
 
