@@ -2,9 +2,11 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Eventful } from 'types'
 import { api, useSocket } from './api'
 
-export const useEvents = () => {
-  const query = useQuery<Eventful.API.EventGet[]>(['events'], () =>
-    api.get('events').then((res) => res.data)
+export const useEvents = ({ start, end }: { start?: Date; end?: Date } = {}) => {
+  const query = useQuery<Eventful.API.EventGet[]>(['events', { start, end }], () =>
+    start || end
+      ? api.post('events', { start, end }).then((res) => res.data)
+      : api.get('events').then((res) => res.data)
   )
 
   const qc = useQueryClient()
