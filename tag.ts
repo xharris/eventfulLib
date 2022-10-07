@@ -29,6 +29,8 @@ export const useTag = ({ tag }: { tag?: Eventful.ID }) => {
   const muEditTag = useMutation((body: Eventful.API.TagEdit) => api.put(`tag/${tag}`, body), {
     onSuccess() {
       qc.invalidateQueries(['tag', { tag }])
+      qc.invalidateQueries(['event'])
+      qc.invalidateQueries(['events'])
     },
   })
 

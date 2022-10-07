@@ -9,7 +9,7 @@ export const SessionProvider = Provider
 
 export const useSession = (verify: boolean = false) => {
   const [session, setSession] = useSessionCtx()
-  const [isFetching, setIsFetching] = useState(false)
+  const [isFetching, setIsFetching] = useState(true)
 
   const checkAuth = useCallback(() => {
     setIsFetching(true)
