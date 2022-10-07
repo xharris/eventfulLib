@@ -1,6 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Eventful } from 'types'
 import { api } from './api'
+import { extend } from './log'
+
+const log = extend('elib/plan')
 
 export const CATEGORY = {
   None: 0,

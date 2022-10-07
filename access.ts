@@ -19,8 +19,9 @@ export const useAccess = ({ user }: { user?: Eventful.ID } = {}) => {
   const { useOn } = useSocket()
   const { session } = useSession()
   useOn('access:change', (access: Eventful.Access) => {
-    const transform = { tags: 'tag', events: 'event' }
+    const transform = { tags: 'tag', events: 'event', users: 'user', plans: 'plan' }
     if (access.refModel in transform && session?._id === access.user) {
+      qc.invalidateQueries([access.refModel])
       qc.invalidateQueries([transform[access.refModel], { id: access.ref }])
       qc.invalidateQueries(['accesses'])
     }
