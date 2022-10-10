@@ -1,9 +1,8 @@
 import { createContext, ReactNode, useCallback, useContext, useEffect, useState } from 'react'
 import { Eventful } from 'types'
 import { api } from './api'
-import createStateContext from 'react-use/lib/factory/createStateContext'
-import { NativeStorage } from '@awesome-cordova-plugins/native-storage'
 import { AxiosResponse } from 'axios'
+import { setItem } from 'src/libs/storage'
 
 const Context = createContext<{
   session?: Eventful.User
@@ -48,7 +47,7 @@ export const SessionProvider = ({
   const logIn = (body: Eventful.API.LogInOptions) => {
     return api.post('login', body).then(async (res) => {
       res.status < 300 && setSession(res.data)
-      await NativeStorage.setItem('deviceId', res.data.deviceId)
+      setItem('deviceId', res.data.deviceId)
       return res
     })
   }
@@ -56,7 +55,7 @@ export const SessionProvider = ({
   const signUp = (body: Eventful.API.SignUpOptions) => {
     return api.post('signup', body).then(async (res) => {
       res.status < 300 && setSession(res.data)
-      await NativeStorage.setItem('deviceId', res.data.deviceId)
+      setItem('deviceId', res.data.deviceId)
       return res
     })
   }
