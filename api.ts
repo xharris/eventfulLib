@@ -1,13 +1,5 @@
-import axios, { AxiosInstance } from 'axios'
-import {
-  Context,
-  createContext,
-  DependencyList,
-  ReactNode,
-  useContext,
-  useEffect,
-  useState,
-} from 'react'
+import axios from 'axios'
+import { DependencyList, useEffect, useState } from 'react'
 import { io, Socket } from 'socket.io-client'
 import { ClientToServerEvents, ServerToClientEvents } from 'types'
 import config from '../libs/config'
