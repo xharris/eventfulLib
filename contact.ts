@@ -5,7 +5,7 @@ import { api } from './api'
 export const useContacts = ({ user }: { user?: Eventful.ID }) => {
   const query = useQuery<Eventful.User[]>(
     ['contacts', { user }],
-    () => api.get(`contacts`).then((res) => res.data),
+    () => api.get(`contacts/${user}`).then((res) => res.data),
     {
       enabled: !!user,
     }
