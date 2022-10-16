@@ -2,20 +2,22 @@ import axios from 'axios'
 import { DependencyList, useEffect, useState } from 'react'
 import { io, Socket } from 'socket.io-client'
 import { ClientToServerEvents, ServerToClientEvents } from 'types'
-import config from '../libs/config'
+import { IS_MOBILE, NODE_ENV, REACT_APP_API_URL, REACT_APP_SOCKET_URL } from '../libs/config'
 import { extend } from './log'
 
 const log = extend('elib/api')
 
-const { NODE_ENV, REACT_APP_API_URL = '/api', IS_MOBILE, REACT_APP_SOCKET_URL } = config
+const baseURL =
+  NODE_ENV === 'production' && !IS_MOBILE
+    ? `${window.location.protocol}//${window.location.host}${REACT_APP_API_URL}`
+    : REACT_APP_API_URL
 
 export const api = axios.create({
-  baseURL:
-    NODE_ENV === 'production' && !IS_MOBILE
-      ? `${window.location.protocol}//${window.location.host}${REACT_APP_API_URL}`
-      : REACT_APP_API_URL,
+  baseURL,
   withCredentials: true,
 })
+
+log.info(`using ${baseURL}`)
 
 type AddParameters<
   TFunction extends (...args: any) => any,
@@ -34,7 +36,7 @@ export const useSocket = () => {
   const [connected, setConnected] = useState(false)
 
   useEffect(() => {
-    const newSocket = io(REACT_APP_SOCKET_URL ?? '/', {
+    const newSocket = io(REACT_APP_SOCKET_URL, {
       transports: IS_MOBILE ? ['websocket'] : undefined,
     })
     setSocket(newSocket)

@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { Eventful } from 'types'
 import { api } from './api'
 
-export const useUser = ({ id: _id, username }: { id?: string; username?: string }) => {
+export const useUser = ({ id: _id, username }: { id?: Eventful.ID; username?: string }) => {
   const [id, setId] = useState(_id)
   const query = useQuery<Eventful.User>(
     ['user', { id }],
@@ -12,6 +12,10 @@ export const useUser = ({ id: _id, username }: { id?: string; username?: string 
       enabled: !!id,
     }
   )
+
+  useEffect(() => {
+    setId(_id)
+  }, [_id])
 
   useEffect(() => {
     if (username) {
