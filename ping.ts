@@ -1,26 +1,30 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { Eventful } from 'types'
 import { api } from './api'
 
-export const usePings = ({
-  tags,
-  scope,
-}: { tags?: Eventful.ID[]; scope?: Eventful.Ping['scope'] } = {}) => {
-  const { data, ...query } = useQuery<Eventful.API.PingGet[]>(['ping'], () =>
-    api.get('pings').then((res) => res.data)
+export interface UsePingsProps {
+  tags?: Eventful.ID[]
+  scope?: Eventful.Ping['scope']
+  beforeTime?: Date
+  afterTime?: Date
+}
+
+export const usePings = ({ tags, scope, ...options }: UsePingsProps = {}) => {
+  const { data, ...query } = useQuery<Eventful.API.PingGet[]>(['pings', options], () =>
+    api.post('pings', options).then((res) => res.data)
   )
   const qc = useQueryClient()
 
-  const addPing = useMutation((body: Eventful.API.PingAdd) => api.post('pings', body), {
+  const addPing = useMutation((body: Eventful.API.PingAdd) => api.post('pings/add', body), {
     onSuccess: (res) => {
-      qc.invalidateQueries(['ping'])
+      qc.invalidateQueries(['pings'])
     },
   })
 
   const deletePing = useMutation((id: Eventful.ID) => api.delete(`pings/${id}`), {
     onSuccess: (res) => {
-      qc.invalidateQueries(['ping'])
+      qc.invalidateQueries(['pings'])
     },
   })
 
@@ -33,6 +37,10 @@ export const usePings = ({
       ),
     [data, tags, scope]
   )
+
+  useEffect(() => {
+    console.log(JSON.stringify(data), scope)
+  }, [data, scope])
 
   return {
     ...query,
