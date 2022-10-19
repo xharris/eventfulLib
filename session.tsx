@@ -63,7 +63,11 @@ export const SessionProvider = ({
     })
   }
   // .catch(console.log)
-  const logOut = () => api.get('logout').then(() => setSession(undefined))
+  const logOut = () =>
+    api
+      .delete('fcm')
+      .then(() => api.get('logout'))
+      .then(() => setSession(undefined))
 
   return (
     <Context.Provider

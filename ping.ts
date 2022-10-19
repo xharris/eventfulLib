@@ -1,7 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useMemo } from 'react'
+import { getLocation } from 'src/libs/location'
 import { Eventful } from 'types'
-import { api } from './api'
+import { api, useSocket } from './api'
+import { extend } from './log'
+import { useSession } from './session'
+
+const log = extend('elib/ping')
 
 export interface UsePingsProps {
   tags?: Eventful.ID[]
@@ -45,6 +50,34 @@ export const usePings = ({ tags, scope, ...options }: UsePingsProps = {}) => {
     [data, tags, scope]
   )
 
+  const { useOn, socket, connected } = useSocket()
+  const { session } = useSession()
+
+  useOn('ping:add', (ping: Eventful.API.PingGet) => {
+    qc.setQueriesData<Eventful.API.PingGet[]>(['pings'], (old) =>
+      old ? [...old.filter((ping2) => ping2._id !== ping._id), ping] : undefined
+    )
+  })
+
+  useOn('ping:delete', (ping: Eventful.ID) => {
+    qc.setQueriesData<Eventful.API.PingGet[]>(['pings'], (old) =>
+      old ? old.filter((ping2) => ping2._id !== ping) : undefined
+    )
+  })
+
+  useEffect(() => {
+    if (socket && connected && session) {
+      socket.emit('user:join', session._id)
+      socket.emit('tag:join', session._id)
+    }
+    return () => {
+      if (socket) {
+        socket.emit('user:leave')
+        socket.emit('tag:leave')
+      }
+    }
+  }, [socket, connected, session])
+
   return {
     ...query,
     data: filtered,
@@ -76,4 +109,63 @@ export const extractDetails = (label: string) => {
     label: label.trim(),
     details: details as Record<keyof typeof relist, string[]>,
   }
+}
+
+// quick pings
+
+export const pingOnMyWay = async (source: Eventful.ID) => {
+  const sourcePing = await api.get<Eventful.API.PingGet>(`pings/${source}`).then((res) => res.data)
+  if (!sourcePing) {
+    return 'api-fail'
+  }
+  // const location = await getLocation()
+  // if (!location) {
+  //   return 'denied'
+  // }
+  const ping = await api
+    .post('pings/add', {
+      label: 'On my way',
+      type: 'going',
+      tags: [],
+      location: {
+        ...sourcePing.location,
+      },
+    } as Eventful.API.PingAdd)
+    .then((res) => res.data)
+  if (!ping) {
+    return 'api-fail'
+  }
+  return 'success'
+}
+
+export const pingAskReply = async (
+  source: Eventful.ID,
+  replyMessage = '',
+  useMyLocation = false
+) => {
+  const sourcePing = await api.get<Eventful.API.PingGet>(`pings/${source}`).then((res) => res.data)
+  if (!sourcePing) {
+    return 'api-fail'
+  }
+  const location = sourcePing.location
+  if (useMyLocation) {
+    const loc = await getLocation()
+    if (loc) {
+      location.coords = { latitude: loc.coords.latitude, longitude: loc.coords.longitude }
+    }
+  }
+  const ping = await api
+    .post('pings/add', {
+      label: replyMessage,
+      type: 'ping',
+      tags: [],
+      location: {
+        ...sourcePing.location,
+      },
+    } as Eventful.API.PingAdd)
+    .then((res) => res.data)
+  if (!ping) {
+    return 'api-fail'
+  }
+  return 'success'
 }

@@ -2,10 +2,14 @@ import axios from 'axios'
 import { DependencyList, useEffect, useState } from 'react'
 import { io, Socket } from 'socket.io-client'
 import { ClientToServerEvents, ServerToClientEvents } from 'types'
-import { IS_MOBILE, NODE_ENV, REACT_APP_API_URL, REACT_APP_SOCKET_URL } from '../libs/config'
 import { extend } from './log'
 
 const log = extend('elib/api')
+
+const NODE_ENV = process.env.NODE_ENV
+const IS_MOBILE = process.env.IS_MOBILE
+const REACT_APP_API_URL = process.env.REACT_APP_API_URL
+const REACT_APP_SOCKET_URL = process.env.REACT_APP_SOCKET_URL
 
 const baseURL =
   NODE_ENV === 'production' && !IS_MOBILE

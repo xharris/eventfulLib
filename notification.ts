@@ -101,12 +101,21 @@ export const useNotification = ({
 }
 
 export const useNotifications = () => {
-  const query = useQuery(['notifications'], () =>
-    api.get<Eventful.NotificationSetting[]>(`notifications/settings`).then((res) => res.data)
+  const { session } = useSession()
+  const query = useQuery(
+    ['notifications'],
+    () => api.get<Eventful.NotificationSetting[]>(`notifications/settings`).then((res) => res.data),
+    { enabled: !!session }
   )
   const { data } = query
   const qc = useQueryClient()
   useMessaging()
+
+  useEffect(() => {
+    if (session) {
+      request()
+    }
+  }, [session])
 
   const isEnabled = useCallback(
     ({
