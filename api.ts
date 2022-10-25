@@ -3,13 +3,9 @@ import { DependencyList, useEffect, useState } from 'react'
 import { io, Socket } from 'socket.io-client'
 import { ClientToServerEvents, ServerToClientEvents } from 'types'
 import { extend } from './log'
+import { NODE_ENV, IS_MOBILE, REACT_APP_API_URL, REACT_APP_SOCKET_URL } from 'src/libs/config'
 
 const log = extend('elib/api')
-
-const NODE_ENV = process.env.NODE_ENV
-const IS_MOBILE = process.env.IS_MOBILE
-const REACT_APP_API_URL = process.env.REACT_APP_API_URL
-const REACT_APP_SOCKET_URL = process.env.REACT_APP_SOCKET_URL
 
 const baseURL =
   NODE_ENV === 'production' && !IS_MOBILE
