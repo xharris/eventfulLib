@@ -35,11 +35,14 @@ export const SessionProvider = ({
   const checkAuth = useCallback(() => {
     setIsFetching(true)
     return api
-      .get('auth')
+      .get('auth', {
+        timeout: 2000,
+      })
       .then((res) => {
         setSession(res.data)
       })
       .catch((err) => {
+        log.error(err.message)
         setSession(undefined)
       })
       .finally(() => {

@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { DependencyList, useEffect, useState } from 'react'
+import { createContext, DependencyList, ReactNode, useContext, useEffect, useState } from 'react'
 import { io, Socket } from 'socket.io-client'
 import { ClientToServerEvents, ServerToClientEvents } from 'types'
 import { extend } from './log'
@@ -7,10 +7,11 @@ import { NODE_ENV, IS_MOBILE, REACT_APP_API_URL, REACT_APP_SOCKET_URL } from 'sr
 
 const log = extend('elib/api')
 
+const API_URL = process.env.REACT_APP_API_URL
 const baseURL =
   NODE_ENV === 'production' && !IS_MOBILE
-    ? `${window.location.protocol}//${window.location.host}${REACT_APP_API_URL ?? '/api'}`
-    : REACT_APP_API_URL
+    ? `${window.location.protocol}//${window.location.host}${API_URL ?? '/api'}`
+    : API_URL
 
 export const api = axios.create({
   baseURL,
@@ -31,12 +32,27 @@ type useOnHook = AddParameters<
   void
 >
 
-export const useSocket = () => {
+const Context = createContext<{
+  socket?: Socket<ServerToClientEvents, ClientToServerEvents>
+  connected: boolean
+  useOn: useOnHook
+}>({
+  socket: undefined,
+  connected: false,
+  useOn: () => null,
+})
+
+export const ApiProvider = ({ children }: { children?: ReactNode }) => {
   const [socket, setSocket] = useState<Socket<ServerToClientEvents, ClientToServerEvents>>()
   const [connected, setConnected] = useState(false)
+  const SOCKET_URL = process.env.REACT_APP_SOCKET_URL
 
   useEffect(() => {
-    const newSocket = io(REACT_APP_SOCKET_URL, {
+    log.info(`websocket init=${!!socket} connected=${connected}`)
+  }, [socket, connected])
+
+  useEffect(() => {
+    const newSocket = io(SOCKET_URL, {
       transports: IS_MOBILE ? ['websocket'] : undefined,
     })
     setSocket(newSocket)
@@ -44,6 +60,7 @@ export const useSocket = () => {
     return () => {
       newSocket.close()
       setSocket(undefined)
+      setConnected(false)
     }
   }, [])
 
@@ -54,7 +71,11 @@ export const useSocket = () => {
     socket?.on('disconnect', () => {
       setConnected(false)
     })
-    socket?.on('connect_error', (e) => log.error(`[Socket.IO] ${e.message}`))
+    socket?.on('connect_error', (e) =>
+      log.error(
+        `[Socket.IO] ${e.message} ${JSON.stringify(e)} (${SOCKET_URL}, websocket: ${IS_MOBILE})`
+      )
+    )
 
     return () => {
       socket?.off('connect')
@@ -72,10 +93,18 @@ export const useSocket = () => {
     }, [connected, socket, ev, listener, deps])
   }
 
-  return {
-    socket,
-    connected,
-    useOn,
-  }
+  return (
+    <Context.Provider
+      value={{
+        socket,
+        connected,
+        useOn,
+      }}
+    >
+      {children}
+    </Context.Provider>
+  )
 }
+
+export const useSocket = () => useContext(Context)
 // io(process.env.REACT_APP_SOCKET_URL ?? '/')
