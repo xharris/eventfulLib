@@ -9,7 +9,7 @@ const log = extend('elib/api')
 
 const baseURL =
   NODE_ENV === 'production' && !IS_MOBILE
-    ? `${window.location.protocol}//${window.location.host}${REACT_APP_API_URL}`
+    ? `${window.location.protocol}//${window.location.host}${REACT_APP_API_URL ?? '/api'}`
     : REACT_APP_API_URL
 
 export const api = axios.create({
