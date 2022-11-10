@@ -1,4 +1,5 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useCallback } from 'react'
 import { Eventful } from 'types'
 import { api, useSocket } from './api'
 import { useSession } from './session'
@@ -27,8 +28,19 @@ export const useAccess = ({ user }: { user?: Eventful.ID } = {}) => {
     }
   })
 
+  const findAccess = useCallback(
+    ({ refModel, ref, user: findUser }: Pick<Eventful.Access, 'refModel' | 'ref' | 'user'>) =>
+      refModel === 'events'
+        ? query.data?.events.find((ev) => ev.ref === ref && ev.user === findUser)
+        : refModel === 'tags'
+        ? query.data?.tags.find((ev) => ev.ref === ref && ev.user === findUser)
+        : null,
+    [query]
+  )
+
   return {
     ...query,
+    findAccess,
     updateAccess,
   }
 }
